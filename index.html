@@ -135,3 +135,51 @@
                 die.textContent = diceResults[index];
                 die.style.transform = 'rotate(0deg)'; 
             }, 300); // Chờ 300ms để thấy hiệu ứng
+        });
+        totalScoreDisplay.textContent = total;
+
+        // 3. Xác định kết quả và tính toán
+        let result = '';
+        let triple = diceResults[0] === diceResults[1] && diceResults[1] === diceResults[2];
+
+        if (triple) {
+             result = 'Triple'; // Trường hợp đặc biệt: 3 viên giống nhau
+        } else if (total >= 4 && total <= 10) {
+            result = 'Xiu';
+        } else if (total >= 11 && total <= 17) {
+            result = 'Tai';
+        }
+
+        // 4. Thanh toán tiền
+        if (playerChoice === result) {
+            // Thắng
+            balance += currentBet;
+            messageDisplay.textContent = `🎉 CHÚC MỪNG! Kết quả là ${result.toUpperCase()}. Bạn thắng ${currentBet}$! (Tổng: ${total})`;
+        } else if (result === 'Triple') {
+            // Thua do Triple
+            balance -= currentBet;
+            messageDisplay.textContent = `🚨 TRIPLE (${diceResults.join('-')})! Cược chính Tài/Xỉu bị thua. Bạn mất ${currentBet}$. (Tổng: ${total})`;
+        } else {
+            // Thua
+            balance -= currentBet;
+            messageDisplay.textContent = `💔 Rất tiếc! Kết quả là ${result.toUpperCase()}. Bạn mất ${currentBet}$. (Tổng: ${total})`;
+        }
+
+        // 5. Kết thúc vòng chơi
+        currentBet = 0;
+        playerChoice = '';
+        
+        // Kích hoạt lại nút cược, vô hiệu hóa nút chơi
+        betButtons.forEach(btn => btn.disabled = false);
+        rollButton.disabled = true;
+
+        updateBalanceDisplay();
+    });
+
+    // Thiết lập trạng thái ban đầu khi tải trang
+    updateBalanceDisplay();
+    betAmountInput.value = 10;
+</script>
+
+</body>
+</html>
