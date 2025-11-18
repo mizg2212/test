@@ -3,63 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tài Xỉu Đơn Giản</title>
+    <title>Tài Xỉu (Sic Bo) - Game Hoạt Động</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f4; }
-        .game-container { max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .dice-display { font-size: 40px; margin: 20px 0; display: flex; justify-content: center; gap: 10px; }
-        .bet-buttons button { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; transition: background-color 0.3s; }
-        #bet-tai { background-color: #4CAF50; color: white; }
-        #bet-xiu { background-color: #F44336; color: white; }
-        #bet-tai:hover, #bet-xiu:hover { opacity: 0.8; }
-        #roll-button { padding: 15px 30px; font-size: 20px; background-color: #2196F3; color: white; margin-top: 20px; cursor: pointer; border: none; border-radius: 5px; }
-        #message { margin-top: 20px; font-size: 18px; font-weight: bold; }
+        /* --- PHẦN CSS: ĐỊNH DẠNG GIAO DIỆN --- */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 50px; background-color: #e8eaf6; }
+        .game-container { max-width: 650px; margin: auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        h2 { color: #3f51b5; }
+        #balance-display, #message { font-size: 1.2em; margin: 15px 0; font-weight: bold; }
+        #balance-display { color: #009688; }
+        .dice-display { font-size: 48px; margin: 25px 0; display: flex; justify-content: center; gap: 20px; }
+        .die { 
+            width: 70px; height: 70px; line-height: 70px; 
+            background-color: #ffeb3b; border-radius: 10px; 
+            border: 2px solid #fbc02d; color: #333; 
+            font-weight: 900; box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s; /* Thêm animation khi gieo */
+        }
+        .bet-controls { margin: 20px 0; display: flex; justify-content: space-around; align-items: center; }
+        .bet-buttons button { 
+            padding: 12px 25px; font-size: 1.1em; margin: 5px; 
+            cursor: pointer; border: none; border-radius: 8px; 
+            font-weight: bold; transition: background-color 0.3s, transform 0.1s;
+        }
+        #bet-tai { background-color: #f44336; color: white; } /* Đỏ */
+        #bet-xiu { background-color: #2196F3; color: white; } /* Xanh */
+        .bet-buttons button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .bet-buttons button:hover:not(:disabled) { transform: translateY(-2px); }
+        #roll-button { 
+            padding: 15px 40px; font-size: 1.3em; background-color: #4CAF50; 
+            color: white; margin-top: 20px; cursor: pointer; border: none; 
+            border-radius: 8px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h2>Trò Chơi Tài Xỉu (Sic Bo)</h2>
+    <h2>🎲 Tài Xỉu Online Đơn Giản</h2>
 
-    <p>Số dư: <span id="balance">1000</span>$</p>
-    <label for="bet-amount">Đặt cược ($):</label>
-    <input type="number" id="bet-amount" value="10" min="1" max="1000">
-
+    <p id="balance-display">Số dư: 1000$</p>
+    <div class="bet-controls">
+        <label for="bet-amount">Số tiền cược ($):</label>
+        <input type="number" id="bet-amount" value="10" min="1" max="1000" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 100px; text-align: center;">
+    </div>
     <hr>
 
-    <h3>Kết quả:</h3>
+    <h3>Kết quả lượt gieo:</h3>
     <div class="dice-display">
-        <span id="dice1">?</span>
-        <span id="dice2">?</span>
-        <span id="dice3">?</span>
+        <span class="die" id="dice1">?</span>
+        <span class="die" id="dice2">?</span>
+        <span class="die" id="dice3">?</span>
     </div>
-    <p>Tổng điểm: <span id="total">?</span></p>
+    <p>Tổng điểm: <span id="total-score">...</span></p>
 
-    <hr>
-
+    <p>Bạn chọn:</p>
     <div class="bet-buttons">
-        <button id="bet-tai">TÀI (Tổng từ 11 - 17)</button>
-        <button id="bet-xiu">XỈU (Tổng từ 4 - 10)</button>
+        <button id="bet-tai" data-choice="Tai">TÀI (11 - 17)</button>
+        <button id="bet-xiu" data-choice="Xiu">XỈU (4 - 10)</button>
     </div>
 
-    <button id="roll-button">TUNG XÚC XẮC</button>
-
-    <p id="message"></p>
+    <button id="roll-button" disabled>BẮT ĐẦU CHƠI</button>
+    
+    <p id="message">Hãy chọn Tài hoặc Xỉu để đặt cược.</p>
 </div>
 
 <script>
-    // **LƯU Ý QUAN TRỌNG:**
-    // Toàn bộ logic trò chơi (sinh số ngẫu nhiên, tính tiền thắng/thua) 
-    // sẽ được viết ở đây bằng JavaScript.
-    // Ví dụ:
-    /*
-    document.getElementById('roll-button').onclick = function() {
-        // Code để sinh 3 số ngẫu nhiên từ 1 đến 6
-        // Code để kiểm tra xem người chơi đặt TÀI hay XỈU
-        // Code để cập nhật số dư
-    };
-    */
-</script>
+    // --- PHẦN JAVASCRIPT: LOGIC TRÒ CHƠI ---
 
-</body>
-</html>
+    let balance = 1000;
+    let currentBet = 0;
+    let playerChoice = '';
+
+    const balanceDisplay = document.getElementById('balance-display');
+    const betAmountInput = document.getElementById('bet-amount');
+    const rollButton = document.getElementById('roll-button');
+    const messageDisplay = document.getElementById('message');
+    const diceElements = [
+        document.getElementById('dice1'),
+        document.getElementById('dice2'),
+        document.getElementById('dice3')
+    ];
+    const totalScoreDisplay = document.getElementById('total-score');
+    const betButtons = document.querySelectorAll('.bet-buttons button');
+
+    // Cập nhật số dư hiển thị
+    function updateBalanceDisplay() {
+        balanceDisplay.textContent = `Số dư: ${balance}$`;
+    }
+
+    // Hàm GIEU XÚC XẮC: sinh số ngẫu nhiên từ 1 đến 6
+    function rollDice() {
+        return Math.floor(Math.random() * 6) + 1;
+    }
+
+    // --- XỬ LÝ SỰ KIỆN ĐẶT CƯỢC (TÀI/XỈU) ---
+    betButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const amount = parseInt(betAmountInput.value);
+
+            // Kiểm tra tính hợp lệ của tiền cược
+            if (isNaN(amount) || amount <= 0 || amount > balance) {
+                messageDisplay.textContent = (amount > balance) ? 'Số dư không đủ!' : 'Vui lòng nhập số tiền cược hợp lệ.';
+                return;
+            }
+
+            // Đặt cược thành công
+            currentBet = amount;
+            playerChoice = button.getAttribute('data-choice');
+            
+            messageDisplay.textContent = `Bạn đã cược ${currentBet}$ vào cửa ${playerChoice.toUpperCase()}. Nhấn TUNG XÚC XẮC!`;
+            
+            // Vô hiệu hóa cược, kích hoạt nút chơi
+            betButtons.forEach(btn => btn.disabled = true);
+            rollButton.disabled = false;
+        });
+    });
+
+    // --- XỬ LÝ SỰ KIỆN TUNG XÚC XẮC ---
+    rollButton.addEventListener('click', () => {
+        if (!playerChoice || currentBet === 0) return; // Bảo vệ: không cho chạy nếu chưa cược
+
+        // 1. Gieo 3 viên xúc xắc
+        const diceResults = [rollDice(), rollDice(), rollDice()];
+        const total = diceResults.reduce((sum, value) => sum + value, 0);
+
+        // 2. Cập nhật giao diện xúc xắc và tổng điểm
+        diceElements.forEach((die, index) => {
+            // Thêm hiệu ứng lắc xúc xắc (chỉ mang tính minh họa)
+            die.style.transform = 'rotate(360deg)'; 
+            setTimeout(() => {
+                die.textContent = diceResults[index];
+                die.style.transform = 'rotate(0deg)'; 
+            }, 300); // Chờ 300ms để thấy hiệu ứng
